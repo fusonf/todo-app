@@ -4,301 +4,225 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Todo App</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 48px 16px;
-    }
-
-    .card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-      width: 100%;
-      max-width: 520px;
-      padding: 32px;
-    }
-
-    h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      color: #1a1a2e;
-      margin-bottom: 8px;
-    }
-
-    .subtitle {
-      font-size: 0.9rem;
-      color: #888;
-      margin-bottom: 28px;
-    }
-
-    .input-row {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 28px;
-    }
-
-    .input-row input {
-      flex: 1;
-      padding: 12px 16px;
-      border: 2px solid #e8e8f0;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      color: #333;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .input-row input:focus {
-      border-color: #667eea;
-    }
-
-    .input-row input::placeholder {
-      color: #bbb;
-    }
-
-    .btn-add {
-      padding: 12px 20px;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      cursor: pointer;
-      white-space: nowrap;
-      transition: opacity 0.2s, transform 0.1s;
-    }
-
-    .btn-add:hover {
-      opacity: 0.9;
-    }
-
-    .btn-add:active {
-      transform: scale(0.97);
-    }
-
-    .stats {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.82rem;
-      color: #999;
-      margin-bottom: 14px;
-    }
-
-    .stats span strong {
-      color: #555;
-    }
-
-    .clear-btn {
-      background: none;
-      border: none;
-      color: #e05c5c;
-      font-size: 0.82rem;
-      cursor: pointer;
-      padding: 2px 4px;
-      border-radius: 4px;
-      transition: background 0.15s;
-    }
-
-    .clear-btn:hover {
-      background: #ffeaea;
-    }
-
-    .todo-list {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .todo-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
-      background: #f8f8fc;
-      border-radius: 10px;
-      border: 1px solid #ebebf5;
-      transition: background 0.15s, transform 0.1s;
-      animation: slideIn 0.2s ease;
-    }
-
-    @keyframes slideIn {
-      from { opacity: 0; transform: translateY(-8px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    .todo-item:hover {
-      background: #f0f0fa;
-    }
-
-    .todo-item input[type="checkbox"] {
-      appearance: none;
-      -webkit-appearance: none;
-      width: 20px;
-      height: 20px;
-      border: 2px solid #c0c0d8;
-      border-radius: 6px;
-      cursor: pointer;
-      flex-shrink: 0;
-      position: relative;
-      transition: background 0.15s, border-color 0.15s;
-    }
-
-    .todo-item input[type="checkbox"]:checked {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      border-color: transparent;
-    }
-
-    .todo-item input[type="checkbox"]:checked::after {
-      content: '';
-      position: absolute;
-      left: 4px;
-      top: 1px;
-      width: 6px;
-      height: 10px;
-      border: 2px solid #fff;
-      border-top: none;
-      border-left: none;
-      transform: rotate(45deg);
-    }
-
-    .todo-text {
-      flex: 1;
-      font-size: 0.95rem;
-      color: #333;
-      word-break: break-word;
-      line-height: 1.4;
-      transition: color 0.2s, text-decoration 0.2s;
-    }
-
-    .todo-text.done {
-      text-decoration: line-through;
-      color: #bbb;
-    }
-
-    .btn-delete {
-      background: none;
-      border: none;
-      color: #ccc;
-      font-size: 1.1rem;
-      cursor: pointer;
-      padding: 4px 6px;
-      border-radius: 6px;
-      line-height: 1;
-      flex-shrink: 0;
-      transition: color 0.15s, background 0.15s;
-    }
-
-    .btn-delete:hover {
-      color: #e05c5c;
-      background: #ffeaea;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 32px 0;
-      color: #ccc;
-    }
-
-    .empty-state .icon {
-      font-size: 2.5rem;
-      margin-bottom: 10px;
-    }
-
-    .empty-state p {
-      font-size: 0.9rem;
-    }
-
-    .filters {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 16px;
-    }
-
-    .filter-btn {
-      flex: 1;
-      padding: 8px 12px;
-      border: 2px solid #e8e8f0;
-      border-radius: 8px;
-      background: none;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: #999;
-      cursor: pointer;
-      transition: border-color 0.15s, color 0.15s, background 0.15s;
-    }
-
-    .filter-btn:hover {
-      border-color: #667eea;
-      color: #667eea;
-    }
-
-    .filter-btn.active {
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      border-color: transparent;
-      color: #fff;
-    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:48px 16px}
+    #loginScreen{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.2);width:100%;max-width:400px;padding:48px 32px;text-align:center;margin-top:40px}
+    #loginScreen .logo{font-size:3rem;margin-bottom:16px}
+    #loginScreen h2{font-size:1.6rem;font-weight:700;color:#1a1a2e;margin-bottom:8px}
+    #loginScreen p{color:#888;font-size:.9rem;margin-bottom:32px;line-height:1.6}
+    .btn-google{display:inline-flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:13px 24px;background:#fff;border:2px solid #e8e8f0;border-radius:10px;font-size:.95rem;font-weight:600;color:#333;cursor:pointer;transition:border-color .2s,box-shadow .2s}
+    .btn-google:hover{border-color:#667eea;box-shadow:0 4px 12px rgba(102,126,234,.2)}
+    .btn-google svg{width:20px;height:20px;flex-shrink:0}
+    #appScreen{width:100%;max-width:520px;display:none}
+    .user-bar{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:0 4px}
+    .user-bar img{width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,.6)}
+    .user-bar .user-name{flex:1;font-size:.88rem;font-weight:600;color:rgba(255,255,255,.9)}
+    .btn-signout{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);border-radius:8px;color:#fff;font-size:.8rem;font-weight:600;padding:6px 12px;cursor:pointer;transition:background .15s}
+    .btn-signout:hover{background:rgba(255,255,255,.3)}
+    .card{background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.2);width:100%;padding:32px}
+    h1{font-size:1.8rem;font-weight:700;color:#1a1a2e;margin-bottom:8px}
+    .subtitle{font-size:.9rem;color:#888;margin-bottom:28px}
+    .input-row{display:flex;gap:10px;margin-bottom:28px}
+    .input-row input{flex:1;padding:12px 16px;border:2px solid #e8e8f0;border-radius:10px;font-size:.95rem;color:#333;outline:none;transition:border-color .2s}
+    .input-row input:focus{border-color:#667eea}
+    .input-row input::placeholder{color:#bbb}
+    .btn-add{padding:12px 20px;background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;border:none;border-radius:10px;font-size:.95rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:opacity .2s,transform .1s}
+    .btn-add:hover{opacity:.9}
+    .btn-add:active{transform:scale(.97)}
+    .filters{display:flex;gap:6px;margin-bottom:16px}
+    .filter-btn{flex:1;padding:8px 12px;border:2px solid #e8e8f0;border-radius:8px;background:none;font-size:.85rem;font-weight:600;color:#999;cursor:pointer;transition:border-color .15s,color .15s,background .15s}
+    .filter-btn:hover{border-color:#667eea;color:#667eea}
+    .filter-btn.active{background:linear-gradient(135deg,#667eea,#764ba2);border-color:transparent;color:#fff}
+    .stats{display:flex;justify-content:space-between;align-items:center;font-size:.82rem;color:#999;margin-bottom:14px}
+    .stats span strong{color:#555}
+    .clear-btn{background:none;border:none;color:#e05c5c;font-size:.82rem;cursor:pointer;padding:2px 4px;border-radius:4px;transition:background .15s}
+    .clear-btn:hover{background:#ffeaea}
+    .todo-list{list-style:none;display:flex;flex-direction:column;gap:10px}
+    .todo-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:#f8f8fc;border-radius:10px;border:1px solid #ebebf5;transition:background .15s;animation:slideIn .2s ease}
+    @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+    .todo-item:hover{background:#f0f0fa}
+    .todo-item input[type="checkbox"]{appearance:none;-webkit-appearance:none;width:20px;height:20px;border:2px solid #c0c0d8;border-radius:6px;cursor:pointer;flex-shrink:0;position:relative;transition:background .15s,border-color .15s}
+    .todo-item input[type="checkbox"]:checked{background:linear-gradient(135deg,#667eea,#764ba2);border-color:transparent}
+    .todo-item input[type="checkbox"]:checked::after{content:'';position:absolute;left:4px;top:1px;width:6px;height:10px;border:2px solid #fff;border-top:none;border-left:none;transform:rotate(45deg)}
+    .todo-text{flex:1;font-size:.95rem;color:#333;word-break:break-word;line-height:1.4}
+    .todo-text.done{text-decoration:line-through;color:#bbb}
+    .btn-delete{background:none;border:none;color:#ccc;font-size:1.1rem;cursor:pointer;padding:4px 6px;border-radius:6px;line-height:1;flex-shrink:0;transition:color .15s,background .15s}
+    .btn-delete:hover{color:#e05c5c;background:#ffeaea}
+    .empty-state{text-align:center;padding:32px 0;color:#ccc}
+    .empty-state .icon{font-size:2.5rem;margin-bottom:10px}
+    .empty-state p{font-size:.9rem}
+    .spinner{text-align:center;padding:32px 0;color:#bbb;font-size:.9rem}
+    .spinner::before{content:'';display:block;width:28px;height:28px;border:3px solid #e8e8f0;border-top-color:#667eea;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 12px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .sync-badge{font-size:.72rem;color:#aaa;text-align:right;margin-top:18px;display:flex;align-items:center;justify-content:flex-end;gap:5px}
+    .sync-badge::before{content:'☁';font-size:.85rem;color:#667eea}
   </style>
 </head>
 <body>
-  <div class="card">
-    <h1>My Tasks</h1>
-    <p class="subtitle">Stay organised, get things done.</p>
 
-    <div class="input-row">
-      <input type="text" id="taskInput" placeholder="Add a new task…" maxlength="200" />
-      <button class="btn-add" onclick="addTask()">Add</button>
+  <div id="loginScreen">
+    <div class="logo">✅</div>
+    <h2>My Tasks</h2>
+    <p>Sign in with Google to sync your tasks<br>across all your devices.</p>
+    <button class="btn-google" onclick="signInWithGoogle()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continue with Google
+    </button>
+  </div>
+
+  <div id="appScreen">
+    <div class="user-bar">
+      <img id="userAvatar" src="" alt="avatar" />
+      <span class="user-name" id="userName"></span>
+      <button class="btn-signout" onclick="signOut()">Sign out</button>
     </div>
-
-    <div class="filters">
-      <button class="filter-btn active" id="filter-all" onclick="setFilter('all')">All</button>
-      <button class="filter-btn" id="filter-active" onclick="setFilter('active')">Active</button>
-      <button class="filter-btn" id="filter-completed" onclick="setFilter('completed')">Completed</button>
-    </div>
-
-    <div class="stats">
-      <span id="statsText"></span>
-      <button class="clear-btn" id="clearBtn" onclick="clearCompleted()" style="display:none;">
-        Clear completed
-      </button>
-    </div>
-
-    <ul class="todo-list" id="todoList"></ul>
-
-    <div class="empty-state" id="emptyState">
-      <div class="icon">✅</div>
-      <p>No tasks yet — add one above!</p>
+    <div class="card">
+      <h1>My Tasks</h1>
+      <p class="subtitle">Stay organised, get things done.</p>
+      <div class="input-row">
+        <input type="text" id="taskInput" placeholder="Add a new task..." maxlength="200" />
+        <button class="btn-add" onclick="addTask()">Add</button>
+      </div>
+      <div class="filters">
+        <button class="filter-btn active" id="filter-all"       onclick="setFilter('all')">All</button>
+        <button class="filter-btn"        id="filter-active"    onclick="setFilter('active')">Active</button>
+        <button class="filter-btn"        id="filter-completed" onclick="setFilter('completed')">Completed</button>
+      </div>
+      <div class="stats">
+        <span id="statsText"></span>
+        <button class="clear-btn" id="clearBtn" onclick="clearCompleted()" style="display:none;">Clear completed</button>
+      </div>
+      <div id="loadingSpinner" class="spinner">Loading your tasks...</div>
+      <ul class="todo-list" id="todoList" style="display:none;"></ul>
+      <div class="empty-state" id="emptyState" style="display:none;">
+        <div class="icon">✅</div>
+        <p id="emptyMsg">No tasks yet — add one above!</p>
+      </div>
+      <div class="sync-badge">Synced with Firebase</div>
     </div>
   </div>
 
   <script>
-    let tasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+    // ── Firebase config ──
+    const firebaseConfig = {
+      apiKey: "AIzaSyBFWw1uAJZ0u2oKPEdjw9gwBakGu_pBs-Y",
+      authDomain: "todo-app-ec80d.firebaseapp.com",
+      projectId: "todo-app-ec80d",
+      storageBucket: "todo-app-ec80d.firebasestorage.app",
+      messagingSenderId: "732985285225",
+      appId: "1:732985285225:web:bb017388be4d75cab1e0f8"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db   = firebase.firestore();
+
+    // ── State ──
+    let tasks         = [];
     let currentFilter = 'all';
+    let currentUser   = null;
+    let unsubscribe   = null;
 
-    const input      = document.getElementById('taskInput');
-    const list       = document.getElementById('todoList');
-    const emptyState = document.getElementById('emptyState');
-    const statsText  = document.getElementById('statsText');
-    const clearBtn   = document.getElementById('clearBtn');
+    // ── DOM refs ──
+    const loginScreen   = document.getElementById('loginScreen');
+    const appScreen     = document.getElementById('appScreen');
+    const taskInput     = document.getElementById('taskInput');
+    const todoList      = document.getElementById('todoList');
+    const emptyState    = document.getElementById('emptyState');
+    const emptyMsg      = document.getElementById('emptyMsg');
+    const statsText     = document.getElementById('statsText');
+    const clearBtn      = document.getElementById('clearBtn');
+    const loadingSpinner= document.getElementById('loadingSpinner');
 
-    function saveTasks() {
-      localStorage.setItem('tasks', JSON.stringify(tasks));
+    // ── Auth ──
+    function signInWithGoogle() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      auth.signInWithPopup(provider).catch(err => alert('Sign-in failed: ' + err.message));
     }
 
+    function signOut() {
+      if (unsubscribe) unsubscribe();
+      auth.signOut();
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        currentUser = user;
+        document.getElementById('userName').textContent   = user.displayName || user.email;
+        document.getElementById('userAvatar').src         = user.photoURL || '';
+        document.getElementById('userAvatar').style.display = user.photoURL ? 'block' : 'none';
+        loginScreen.style.display = 'none';
+        appScreen.style.display   = 'block';
+        subscribeToTasks(user.uid);
+      } else {
+        currentUser = null;
+        if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+        tasks = [];
+        loginScreen.style.display = 'block';
+        appScreen.style.display   = 'none';
+      }
+    });
+
+    // ── Firestore real-time listener ──
+    function subscribeToTasks(uid) {
+      loadingSpinner.style.display = 'block';
+      todoList.style.display = 'none';
+      emptyState.style.display = 'none';
+      unsubscribe = db.collection('users').doc(uid).collection('tasks')
+        .orderBy('createdAt', 'desc')
+        .onSnapshot(snapshot => {
+          tasks = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          loadingSpinner.style.display = 'none';
+          render();
+        }, err => {
+          loadingSpinner.style.display = 'none';
+          alert('Error loading tasks: ' + err.message);
+        });
+    }
+
+    function tasksRef() {
+      return db.collection('users').doc(currentUser.uid).collection('tasks');
+    }
+
+    // ── CRUD ──
+    async function addTask() {
+      const text = taskInput.value.trim();
+      if (!text || !currentUser) { taskInput.focus(); return; }
+      await tasksRef().add({
+        text,
+        completed: false,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      taskInput.value = '';
+      taskInput.focus();
+    }
+
+    async function toggleTask(id, current) {
+      await tasksRef().doc(id).update({ completed: !current });
+    }
+
+    async function deleteTask(id) {
+      await tasksRef().doc(id).delete();
+    }
+
+    async function clearCompleted() {
+      const batch = db.batch();
+      tasks.filter(t => t.completed).forEach(t => {
+        batch.delete(tasksRef().doc(t.id));
+      });
+      await batch.commit();
+    }
+
+    // ── Filter ──
     function setFilter(filter) {
       currentFilter = filter;
       ['all', 'active', 'completed'].forEach(f => {
@@ -307,99 +231,63 @@
       render();
     }
 
-    function getFilteredTasks() {
+    function getFiltered() {
       if (currentFilter === 'active')    return tasks.filter(t => !t.completed);
       if (currentFilter === 'completed') return tasks.filter(t =>  t.completed);
       return tasks;
     }
 
+    // ── Render ──
     function render() {
-      list.innerHTML = '';
+      const total    = tasks.length;
+      const done     = tasks.filter(t => t.completed).length;
+      const filtered = getFiltered();
 
-      const total        = tasks.length;
-      const done         = tasks.filter(t => t.completed).length;
-      const hasCompleted = done > 0;
-      const filtered     = getFilteredTasks();
+      statsText.innerHTML = total === 0 ? '' : '<strong>' + done + '</strong> of <strong>' + total + '</strong> completed';
+      clearBtn.style.display = done > 0 ? 'inline-block' : 'none';
 
-      statsText.innerHTML = total === 0 ? '' : `<strong>${done}</strong> of <strong>${total}</strong> completed`;
-      clearBtn.style.display = hasCompleted ? 'inline-block' : 'none';
+      todoList.innerHTML = '';
 
       if (filtered.length === 0) {
+        todoList.style.display = 'none';
         emptyState.style.display = 'block';
-        const messages = {
-          all:       'No tasks yet — add one above!',
-          active:    'No active tasks. Nice work! 🎉',
-          completed: 'No completed tasks yet.'
-        };
-        emptyState.querySelector('p').textContent = messages[currentFilter];
+        const msgs = { all: 'No tasks yet — add one above!', active: 'No active tasks. Nice work! 🎉', completed: 'No completed tasks yet.' };
+        emptyMsg.textContent = msgs[currentFilter];
       } else {
         emptyState.style.display = 'none';
+        todoList.style.display = 'flex';
 
-        filtered.forEach((task) => {
-          const index = tasks.indexOf(task);
+        filtered.forEach(task => {
           const li = document.createElement('li');
           li.className = 'todo-item';
 
-          const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.checked = task.completed;
-          checkbox.addEventListener('change', () => toggleTask(index));
+          const cb = document.createElement('input');
+          cb.type = 'checkbox';
+          cb.checked = task.completed;
+          cb.addEventListener('change', () => toggleTask(task.id, task.completed));
 
           const span = document.createElement('span');
           span.className = 'todo-text' + (task.completed ? ' done' : '');
           span.textContent = task.text;
 
-          const delBtn = document.createElement('button');
-          delBtn.className = 'btn-delete';
-          delBtn.innerHTML = '&#10005;';
-          delBtn.title = 'Delete task';
-          delBtn.addEventListener('click', () => deleteTask(index));
+          const del = document.createElement('button');
+          del.className = 'btn-delete';
+          del.innerHTML = '&#10005;';
+          del.title = 'Delete task';
+          del.addEventListener('click', () => deleteTask(task.id));
 
-          li.appendChild(checkbox);
+          li.appendChild(cb);
           li.appendChild(span);
-          li.appendChild(delBtn);
-          list.appendChild(li);
+          li.appendChild(del);
+          todoList.appendChild(li);
         });
       }
     }
 
-    function addTask() {
-      const text = input.value.trim();
-      if (!text) {
-        input.focus();
-        return;
-      }
-      tasks.unshift({ text, completed: false });
-      saveTasks();
-      render();
-      input.value = '';
-      input.focus();
-    }
-
-    function toggleTask(index) {
-      tasks[index].completed = !tasks[index].completed;
-      saveTasks();
-      render();
-    }
-
-    function deleteTask(index) {
-      tasks.splice(index, 1);
-      saveTasks();
-      render();
-    }
-
-    function clearCompleted() {
-      tasks = tasks.filter(t => !t.completed);
-      saveTasks();
-      render();
-    }
-
-    // Allow pressing Enter to add a task
-    input.addEventListener('keydown', (e) => {
+    // Enter key support
+    document.getElementById('taskInput').addEventListener('keydown', e => {
       if (e.key === 'Enter') addTask();
     });
-
-    render();
   </script>
 </body>
 </html>
